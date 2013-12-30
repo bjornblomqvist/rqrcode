@@ -19,7 +19,7 @@ require_relative "../lib/rqrcode"
 describe :QRCodeExportTest do
   # require_relative "data"
 
-  [:svg, :png, :html].each do |ext|
+  [:svg, :png, :html, :blocks].each do |ext|
     it "must respond_to #{ext}" do
       RQRCode::QRCode.new('x').must_respond_to :"as_#{ext}"
     end
@@ -37,4 +37,7 @@ describe :QRCodeExportTest do
     RQRCode::QRCode.new('html').as_html.must_match(/<table>.+<\/table>/)
   end
 
+  it "must export to blocks" do
+    RQRCode::QRCode.new('blocks').as_blocks.must_match(/█/)
+  end
 end
