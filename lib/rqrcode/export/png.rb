@@ -9,45 +9,39 @@ module RQRCode
       # Render the PNG from the Qrcode.
       #
       # Options:
-      # module_px_size  - Image size, in pixels.
-      # fill  - Background ChunkyPNG::Color, defaults to 'white'
-      # color - Foreground ChunkyPNG::Color, defaults to 'black'
-      # border - Border thickness, in pixels
-      #
-      # It first creates an image where 1px = 1 module, then resizes.
-      # Defaults to 90x90 pixels, customizable by option.
+      # fill            - Background ChunkyPNG::Color, defaults to 'white'
+      # color           - Foreground ChunkyPNG::Color, defaults to 'black'
+      # size            - Total size of PNG, in pixels
+      # border_modules  - Width of white border around the data portion of the code
+      # file            - Filepath of output PNG
       #
       def as_png(options = {})
 
         default_img_options = {
-          :resize_gte_to => false,
-          :resize_exactly_to => false,
           :fill => 'white',
           :color => 'black',
+          :size => 120,
           :border_modules => 4,
-          :file => false,
-          :module_px_size => 6
+          :file => false
         }
+
         options = default_img_options.merge(options) # reverse_merge
 
         fill   = ChunkyPNG::Color(options[:fill])
         color  = ChunkyPNG::Color(options[:color])
         output_file = options[:file]
-        border = options[:border_modules]
-        total_border = border * 2
-        module_px_size = if options[:resize_gte_to]
-          (options[:resize_gte_to].to_f / (self.module_count + total_border).to_f).ceil.to_i
-        else
-          options[:module_px_size]
-        end
-        border_px = border *  module_px_size
-        total_border_px = border_px * 2
-        resize_to = options[:resize_exactly_to]
+
+        total_image_size = options[:size]
+        border_modules = options[:border_modules]
+
+        module_px_size = (total_image_size.to_f / (self.module_count + 2 * border_modules).to_f).floor.to_i
 
         img_size = module_px_size * self.module_count
-        total_img_size = img_size + total_border_px
 
-        png = ChunkyPNG::Image.new(total_img_size, total_img_size, fill)
+        remaining = total_image_size - img_size
+        border_px = (remaining / 2.0).floor.to_i
+
+        png = ChunkyPNG::Image.new(total_image_size, total_image_size, fill)
 
         self.modules.each_index do |x|
           self.modules.each_index do |y|
@@ -60,8 +54,6 @@ module RQRCode
             end
           end
         end
-
-        png = png.resize(resize_to, resize_to) if resize_to
 
         if output_file
           png.save(output_file,{ :color_mode => ChunkyPNG::COLOR_GRAYSCALE, :bit_depth =>1})
