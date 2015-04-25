@@ -9,11 +9,11 @@ module RQRCode
       # Render the PNG from the Qrcode.
       #
       # Options:
-      # fill            - Background ChunkyPNG::Color, defaults to 'white'
-      # color           - Foreground ChunkyPNG::Color, defaults to 'black'
-      # size            - Total size of PNG, in pixels
-      # border_modules  - Width of white border around the data portion of the code
-      # file            - Filepath of output PNG
+      # fill                    - Background ChunkyPNG::Color, defaults to 'white'
+      # color                   - Foreground ChunkyPNG::Color, defaults to 'black'
+      # size/resize_exactly_to  - Total size of PNG, in pixels
+      # border_modules          - Width of white border around the data portion of the code
+      # file                    - Filepath of output PNG
       #
       def as_png(options = {})
 
@@ -31,7 +31,7 @@ module RQRCode
         color  = ChunkyPNG::Color(options[:color])
         output_file = options[:file]
 
-        total_image_size = options[:size]
+        total_image_size = options[:resize_exactly_to] || options[:size]
         border_modules = options[:border_modules]
 
         module_px_size = (total_image_size.to_f / (self.module_count + 2 * border_modules).to_f).floor.to_i
