@@ -11,7 +11,9 @@ module RQRCode
       # Options:
       # fill                    - Background ChunkyPNG::Color, defaults to 'white'
       # color                   - Foreground ChunkyPNG::Color, defaults to 'black'
-      # size/resize_exactly_to  - Total size of PNG, in pixels
+      # resize_gte_to           - Size in pixels, resulting image will be equal or greater than this
+      # size/resize_exactly_to  - Size in pixels, resulting image will be exactly this size
+      # module_px_size          - Size of each data module
       # border_modules          - Width of white border around the data portion of the code
       # file                    - Filepath of output PNG
       #
@@ -20,6 +22,7 @@ module RQRCode
         default_img_options = {
           :fill => 'white',
           :color => 'black',
+          :resize_gte_to => false,
           :size => 120,
           :border_modules => 4,
           :file => false
@@ -31,15 +34,34 @@ module RQRCode
         color  = ChunkyPNG::Color(options[:color])
         output_file = options[:file]
 
-        total_image_size = options[:resize_exactly_to] || options[:size]
+        size = options[:resize_exactly_to] || options[:size]
         border_modules = options[:border_modules]
 
-        module_px_size = (total_image_size.to_f / (self.module_count + 2 * border_modules).to_f).floor.to_i
+        # Determine module_px_size
+        module_px_size = if options[:resize_gte_to]
+          (options[:resize_gte_to].to_f / (self.module_count + 2 * border_modules).to_f).ceil.to_i
+        elsif options[:module_px_size]
+          options[:module_px_size]
+        else
+          (size.to_f / (self.module_count + 2 * border_modules).to_f).floor.to_i
+        end
 
-        img_size = module_px_size * self.module_count
+        data_size = module_px_size * self.module_count
 
-        remaining = total_image_size - img_size
-        border_px = (remaining / 2.0).floor.to_i
+        # Determine border_px
+        border_px = if options[:resize_gte_to] || options[:module_px_size]
+          module_px_size * border_modules
+        else
+          remaining = size - data_size
+          (remaining / 2.0).floor.to_i
+        end
+
+        # Determine total_image_size
+        total_image_size = if options[:resize_gte_to] || options[:module_px_size]
+          data_size + 2 * border_px
+        else
+          size
+        end
 
         png = ChunkyPNG::Image.new(total_image_size, total_image_size, fill)
 
