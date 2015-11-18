@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["darwin@bits2life.com"]
   s.homepage    = "https://github.com/bjornblomqvist/rqrcode"
   s.summary     = "A library to encode QR Codes"
+  s.license     = "MIT"
   s.description = <<EOF
 rQRCode is a library for encoding QR Codes. The simple
 interface allows you to create QR Code data structures
